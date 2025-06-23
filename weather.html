@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>20-Day Weather Forecast</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    .weather-card {
+      transition: transform 0.3s;
+    }
+    .weather-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .weather-icon {
+      font-size: 2.5rem;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h1 class="text-center mb-0">20-Day Weather Forecast</h1>
+          </div>
+          <div class="card-body">
+            <!-- City Input Form -->
+            <form id="weatherForm" class="mb-4">
+              <div class="input-group">
+                <input type="text" id="cityInput" class="form-control form-control-lg" 
+                       placeholder="Enter city name" required>
+                <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="bi bi-search"></i> Get Forecast
+                </button>
+              </div>
+            </form>
+            
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="text-center d-none">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2">Fetching weather data...</p>
+            </div>
+            
+            <!-- Weather Display Area -->
+            <div id="weatherDisplay" class="d-none">
+              <h2 class="text-center mb-4" id="locationTitle"></h2>
+              
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                Note: Free weather APIs typically provide only 5-8 day forecasts. 
+                This demo simulates a 20-day forecast by extending the available data.
+              </div>
+              
+              <div id="forecastContainer" class="row g-3"></div>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    document.getElementById('weatherForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const city = document.getElementById('cityInput').value.trim();
+      
+      // Show loading spinner
+      document.getElementById('loadingSpinner').classList.remove('d-none');
+      document.getElementById('weatherDisplay').classList.add('d-none');
+      document.getElementById('errorMessage').classList.add('d-none');
+      
+      // In a real app, you would call a weather API here
+      // For this demo, we'll simulate the API call with setTimeout
+      setTimeout(() => {
+        getWeatherData(city);
+      }, 1500);
+    });
+    
+    function getWeatherData(city) {
+      // Hide loading spinner
+      document.getElementById('loadingSpinner').classList.add('d-none');
+      
+      try {
+        // This is a simulation - in a real app you would use:
+        // fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=YOUR_API_KEY&units=metric`)
+        
+        // Simulate successful response
+        const forecastData = generateMockForecast(city);
+        displayWeatherForecast(city, forecastData);
+      } catch (error) {
+        showError("Failed to fetch weather data. Please try again later.");
+      }
+    }
+    
+    function generateMockForecast(city) {
+      // Generate mock data for demonstration
+      const forecasts = [];
+      const conditions = ["Sunny", "Partly Cloudy", "Cloudy", "Rainy", "Thunderstorm", "Snowy"];
+      const icons = {
+        "Sunny": "bi-sun",
+        "Partly Cloudy": "bi-cloud-sun",
+        "Cloudy": "bi-cloud",
+        "Rainy": "bi-cloud-rain",
+        "Thunderstorm": "bi-cloud-lightning-rain",
+        "Snowy": "bi-snow"
+      };
+      
+      for (let i = 0; i < 20; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        
+        const condition = conditions[Math.floor(Math.random() * conditions.length)];
+        const tempMin = Math.floor(Math.random() * 10) + 15;
+        const tempMax = tempMin + Math.floor(Math.random() * 8) + 2;
+        
+        forecasts.push({
+          date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+          condition: condition,
+          icon: icons[condition],
+          tempMin: tempMin,
+          tempMax: tempMax,
+          humidity: Math.floor(Math.random() * 50) + 40
+        });
+      }
+      
+      return forecasts;
+    }
+    
+    function displayWeatherForecast(city, forecastData) {
+      document.getElementById('locationTitle').textContent = `20-Day Forecast for ${city}`;
+      
+      const container = document.getElementById('forecastContainer');
+      container.innerHTML = '';
+      
+      forecastData.forEach(day => {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'col-6 col-md-4 col-lg-3';
+        dayElement.innerHTML = `
+          <div class="weather-card card h-100">
+            <div class="card-body text-center">
+              <h5 class="card-title">${day.date}</h5>
+              <div class="weather-icon my-3 text-primary">
+                <i class="bi ${day.icon}"></i>
+              </div>
+              <p class="mb-1">${day.condition}</p>
+              <p class="mb-1"><strong>High:</strong> ${day.tempMax}°C</p>
+              <p class="mb-1"><strong>Low:</strong> ${day.tempMin}°C</p>
+              <p class="mb-0"><strong>Humidity:</strong> ${day.humidity}%</p>
+            </div>
+          </div>
+        `;
+        container.appendChild(dayElement);
+      });
+      
+      document.getElementById('weatherDisplay').classList.remove('d-none');
+    }
+    
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      errorElement.textContent = message;
+      errorElement.classList.remove('d-none');
+    }
+  </script>
+</body>
+</html>
